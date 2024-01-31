@@ -77,8 +77,11 @@ class FigureButton(QPushButton):
             pixmap = QPixmap(self.size())
             
             self.render(pixmap)
-            drag.setHotSpot( QPoint( self.width() / 2, self.height() / 2 ) );
+
             drag.setPixmap(pixmap)
+            drag.setHotSpot(
+                QPoint(self.width() // 2, self.height() // 2)
+            )
 
             drag.exec_(Qt.MoveAction)
 
