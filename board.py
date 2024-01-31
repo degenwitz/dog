@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QWidget, QPushButton
-from PyQt5.QtCore import Qt, QMimeData, QSize
+from PyQt5.QtCore import Qt, QMimeData, QSize, QPoint
 from PyQt5.QtGui import QDrag, QPixmap, QIcon, QFont
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap
@@ -28,7 +28,7 @@ with open('board.csv', newline='') as csvfile:
         if first_row:
             first_row = False
             continue
-        felder[row[0]][int(row[1])] = (int(row[2]),int(row[3]))
+        felder[row[0]][int(row[1])] = (int(row[2])-11,int(row[3])-11)
 
 
 class NextPlayerButton(QPushButton):
@@ -58,7 +58,8 @@ class FigureButton(QPushButton):
     def __init__(self, spieler, nummer, window):
         super().__init__("", window)
         self.setIcon(QIcon(tokens[spieler]))
-        self.setIconSize(QSize(24,24))
+        self.setIconSize(QSize(22,22))
+        self.setStyleSheet("background: transparent; border : 0")
         self.spieler = spieler
         self.nummer = nummer
         self.mein_feld = (zuhause[spieler], nummer)
@@ -74,7 +75,9 @@ class FigureButton(QPushButton):
             drag.setMimeData(mime)
 
             pixmap = QPixmap(self.size())
+            
             self.render(pixmap)
+            drag.setHotSpot( QPoint( self.width() / 2, self.height() / 2 ) );
             drag.setPixmap(pixmap)
 
             drag.exec_(Qt.MoveAction)
@@ -349,7 +352,7 @@ class BoardGraphic(QWidget):
 
 
     def distance(x1,y1,x2,y2):
-        return (x1-x2+12)**2+(y1-y2+12)**2
+        return (x1-x2+11)**2+(y1-y2+11)**2
 
     def calculate_closes_ball(pos, art, dist=1000000000, cur = None, art_alt = None):
         for i, feld in felder[art].items():
