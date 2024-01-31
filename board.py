@@ -66,7 +66,7 @@ class FigureButton(QPushButton):
             self.render(pixmap)
             drag.setPixmap(pixmap)
             
-            drag.setHotSpot(QPoint( self.width() / 2, self.height() / 2 ) );
+            drag.setHotSpot(QPoint( self.width() // 2, self.height() // 2 ) )
             
             drag.exec_(Qt.MoveAction)
 
@@ -142,7 +142,7 @@ class CardGraphic(QPushButton):
             pixmap = QPixmap(self.size())
             self.render(pixmap)
             drag.setPixmap(pixmap)
-            drag.setHotSpot(QPoint( self.width() /2, self.height() / 2 ) );
+            drag.setHotSpot(QPoint( self.width() //2, self.height() // 2 ) )
             drag.exec_(Qt.MoveAction)
 
     def my_move(self, position):
