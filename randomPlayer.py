@@ -77,7 +77,6 @@ def random_move(card, board, figures):
             card.set_target_figures(l)
 
     if isinstance(card, EasyCard):
-        print(card, "is an easy card ")
         for fig in figures:
             if fig.get_player() == 0:
                 if is_number_move_possible(fig, board, card.get_value()):
