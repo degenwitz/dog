@@ -23,3 +23,6 @@ class Board:
 
   def get_board(self):
     return self.board
+
+  def get_field_in_board(self, i):
+    return self.board[i%64]

@@ -1,9 +1,20 @@
 from Figure import Figur
+import uuid
+
+generatedID = 0
 
 class Card:
+
     def __init__(self, color):
         self.__color = color
         self.enter_if_possible = True
+        self.uuid = Card.generateID()
+
+    def generateID():
+        global generatedID
+        generatedID += 1
+        return generatedID
+
 
     def get_color(self):
         return self.__color
@@ -17,12 +28,15 @@ class Card:
     def key(self):
         return (self.__color, str(type(self)))
 
+    def comparer(self):
+        return (self.key(), self.uuid)
+
     def __hash__(self):
-        return hash(self.key())
+        return hash(self.comparer())
 
     def __eq__(self, other):
         if isinstance(other, Card):
-            return self.key() == other.key()
+            return self.comparer() == other.comparer()
         return NotImplemented
 
     def __str__(self):
@@ -54,6 +68,13 @@ class Four(EasyCard):
 class King(EasyCard):
   def __init__(self, color):
     super().__init__(color, 13)
+    self.exit = True
+
+  def get_exit(self):
+      return self.exit
+
+  def set_exit(self, val):
+      self.exit = val
 
   def key(self):
     return unicodeCards[(self.get_color(), 13)]
@@ -66,16 +87,34 @@ class Ass(King):
   def key(self):
     return unicodeCards[(self.get_color(), 1)]
 
+  def set_as_eleven(self):
+      self.value = 11
+
+  def set_as_one(self):
+      self.value = 1
+
 class Seven(Card):
   def __init__(self, color):
     super().__init__(color)
+    self.figures = []
 
   def key(self):
     return unicodeCards[(self.get_color(), 7)]
 
+  def set_target_figures(figures:list):
+    self.figures = []
+
+
+
 class Jack(Card):
   def __init__(self, color):
     super().__init__(color)
+
+  def set_my_figure(figure:Figur):
+      self.my_fig = figure
+
+  def set_other_figure(figure:Figur):
+      self.op_fig = figure
 
   def key(self):
     return unicodeCards[(self.get_color(), 11)]
@@ -87,6 +126,12 @@ class Joker(Card):
   def __init__(self):
         super().__init__("🃏")
         pass
+
+  def set_card(self, card:Card):
+      self.card = card
+
+  def get_card(self):
+      return self.card
 
   def key(self):
     return "🃏"

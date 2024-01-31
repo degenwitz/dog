@@ -5,6 +5,7 @@ class Figur:
     self.player = player
     self.number = number
     self.field = field
+    self.rausgekommen = True
     pass
 
   def get_position(self):
@@ -24,3 +25,6 @@ class Figur:
 
   def is_in_goal(self):
     return self.field[0] in ziele
+
+  def is_blocking(self):
+    return self.rausgekommen
