@@ -63,11 +63,11 @@ class FigureButton(QPushButton):
             drag.setMimeData(mime)
 
             pixmap = QPixmap(self.size())
-            
             self.render(pixmap)
-            drag.setHotSpot( QPoint( self.width() / 2, self.height() / 2 ) );
             drag.setPixmap(pixmap)
-
+            
+            drag.setHotSpot(QPoint( self.width() / 2, self.height() / 2 ) );
+            
             drag.exec_(Qt.MoveAction)
 
     def setzen(self, art, feld_nummer):
@@ -142,6 +142,7 @@ class CardGraphic(QPushButton):
             pixmap = QPixmap(self.size())
             self.render(pixmap)
             drag.setPixmap(pixmap)
+            drag.setHotSpot(QPoint( self.width() /2, self.height() / 2 ) );
             drag.exec_(Qt.MoveAction)
 
     def my_move(self, position):
@@ -235,7 +236,7 @@ class BoardGraphic(QWidget):
 
     def calculate_closes_ball(pos, art, dist=1000000000, cur = None, art_alt = None):
         for i, feld in felder[art].items():
-            dis_here = BoardGraphic.distance(pos.x(),pos.y(), feld[0], feld[1])
+            dis_here = BoardGraphic.distance(pos.x()-22,pos.y()-22, feld[0], feld[1])
             if dis_here < dist:
                 dist = dis_here
                 cur = i
