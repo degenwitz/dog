@@ -64,6 +64,16 @@ class EasyCard(Card):
 class Four(EasyCard):
     def __init__(self, color):
         super().__init__(color, 4)
+        self.move_back = False
+    
+    def get_move_back(self):
+       return self.move_back
+    
+    def set_move_back(self, val):
+       self.move_back = val
+    
+    def key(self):
+       return unicodeCards[(self.get_color(), 4)]
 
 class King(EasyCard):
   def __init__(self, color):

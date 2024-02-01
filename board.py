@@ -31,12 +31,13 @@ with open('board.csv', newline='') as csvfile:
         felder[row[0]][int(row[1])] = (int(row[2])-11,int(row[3])-11)
 
 
+
 class NextPlayerButton(QPushButton):
 
     def __init__(self, game, window):
         super().__init__("next move", window)
         self.game = game
-        self.move(500,500)
+        self.move(525,487)
 
     def onClick(self):
         self.game.nextMove()
@@ -47,7 +48,7 @@ class SkipTurnButton(QPushButton):
     def __init__(self, game, window):
         super().__init__("skip turn", window)
         self.game = game
-        self.move(500,450)
+        self.move(525,437)
 
     def onClick(self):
         self.game.skipTurn()
@@ -145,6 +146,7 @@ class CardGraphic(QPushButton):
         self.move(poition[0],poition[1])
         self.setFont(QFont('Times', 30))
         self.card = card
+        self.setMaximumSize(QSize(40,55))
 
     def is_card(self, card:Card):
         return card == self.card
@@ -198,14 +200,14 @@ class PlayerGraphic():
         self.__current_player.setVisible(isCurrentPlayer)
 
     def add_graphic_card(self, card: CardGraphic, window):
-        position = (600+len(self.__hand)*60, 10 + self.__playernumber*80)
+        position = (600+len(self.__hand)*45, 10 + self.__playernumber*80)
         self.__hand.append(card)
         card.my_move(position)
 
     def __reorg(self):
         i = 0
         for card in self.__hand:
-            position = (600+i*60, 10 + self.__playernumber*80)
+            position = (600+i*45, 10 + self.__playernumber*80)
             card.my_move(position)
             i += 1
 
@@ -224,7 +226,6 @@ class PlayerGraphic():
 
 
 class Pile_Graphic():
-
     def __init__(self, window, name, pos_down):
         self.start_ort = pos_down
         self.__pile = []
@@ -235,7 +236,7 @@ class Pile_Graphic():
     def calc_pos(self, i):
         x_i = i % 31
         y_i = i // 31
-        return (10+x_i*60, self.start_ort+40*y_i)
+        return (10+x_i*40, self.start_ort+55*y_i)
 
     def play_into_pile(self, window, widget, position):
         height = position.x()
@@ -243,7 +244,7 @@ class Pile_Graphic():
         i = 0
         while i < len(self.__pile):
             card = self.__pile[i]
-            if card.x() < position.x() and card.x()+60 > position.x() and card.y() < position.y() and card.y() + 40 > position.y():
+            if card.x() < position.x() and card.x()+40 > position.x() and card.y() < position.y() and card.y() + 55 > position.y():
                 break
             i += 1
         if i < len(self.__pile):
@@ -279,13 +280,12 @@ class Pile_Graphic():
         print("ment to remove card", str(card), "but card not found")
 
 
-
 class BoardGraphic(QWidget):
 
     def __init__(self, game):
         super().__init__()
         self.setAcceptDrops(True)
-        self.setGeometry(0, 0, 1000, 600)
+        self.setGeometry(0, 0, 1260, 1000)
 
         #Backgroud image
         # creating label
@@ -322,7 +322,7 @@ class BoardGraphic(QWidget):
                           )
 
         #discard PIle
-        self.discard = Pile_Graphic(self, "Ablagestapel", 750)
+        self.discard = Pile_Graphic(self, "Ablagestapel", 770)
 
         #deck Pile
         self.deck = Pile_Graphic(self, "deck", 550)
@@ -338,6 +338,7 @@ class BoardGraphic(QWidget):
         all_cards = []
         for card in l:
             card_gr = CardGraphic(card, (0,0), self)
+            card_gr.adjustSize()
             all_cards.append(card_gr)
         self.all_cards = tuple(all_cards)
 
@@ -385,11 +386,11 @@ class BoardGraphic(QWidget):
                 self.store_game.set_player_card(newPlayer, widget.card)
                 if newPlayer >= 0:
                     self.__players[newPlayer].add_graphic_card(widget, self)
-            elif pos.y() > 500 and pos.y() < 750:
+            elif pos.y() > 500 and pos.y() < 760:
                 #deck
                 i = self.deck.play_into_pile(self, widget, pos)
                 self.store_game.set_deck_card(widget.card, i)
-            elif pos.y() > 750:
+            elif pos.y() > 760:
                 i = self.discard.play_into_pile(self, widget, pos)
                 self.store_game.set_discard_card(widget.card, i)
             else:
