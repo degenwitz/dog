@@ -26,5 +26,8 @@ class Figur:
   def is_in_goal(self):
     return self.field[0] in ziele
 
+  def set_blocking(self, val):
+    self.rausgekommen = val
+
   def is_blocking(self):
     return self.rausgekommen

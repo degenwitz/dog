@@ -63,13 +63,15 @@ class GameRunner():
                 if figs.get_spielernummer() == playerNumber:
                     if figs.get_aktuelles_feld()[0] in zuhause:
                         figs.rauskommen()
-                        return          
+                        return
+
         if isinstance(card, EasyCard) and card.get_target_figure() != None:
             figure = self.boardGraphic.getFigure(card.get_target_figure(),playerNumber)
             figure.ziehen(card.get_value(), card.get_enter_if_possible() )
             for figs in self.boardGraphic.getFigures():
-                if figs != figure and figs.get_aktuelles_feld()[0] == 'Spielfeld' and figs.get_aktuelles_feld()[1] == figure.get_aktuelles_feld()[1]:
+                if figs != figure and figs.get_aktuelles_feld()[0] == 'Spielfeld' and figure.get_aktuelles_feld()[0] == 'Spielfeld' and figs.get_aktuelles_feld()[1] == figure.get_aktuelles_feld()[1]:
                     figs.nach_hause()
+                    return
                      
 
     def swap_command_for_player(self, i:int):
@@ -137,7 +139,9 @@ class GameRunner():
                 if ziel == feldGr[0]:
                     spielernummer = (int(ziel[4])-playerNumber)%4
                     feld = (ziel[:-1]+str(spielernummer),feldGr[1])
-            figuren.append(Figur((figure.get_spielernummer()-playerNumber)%4, figure.get_figurenrnummer() ,feld))
+            not_graphic_figur = Figur((figure.get_spielernummer()-playerNumber)%4, figure.get_figurenrnummer() ,feld)
+            not_graphic_figur.set_blocking( figure.ist_blockierend() )
+            figuren.append(not_graphic_figur)
         board = Board(figuren)
         game = Game(None, None, None)
         figuren = tuple(figuren)
