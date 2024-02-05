@@ -22,6 +22,12 @@ def random_move(card, board, figures):
         if board.get_board()[0] == None or not board.get_board()[0].is_blocking():
             card.set_exit(True)
             return card
+        for fig in figures:
+            if fig.get_player == 0:
+                if is_number_move_possible(fig, board, 13):
+                    card.set_exit(False)
+                    card.set_target_figure(fig)
+                    return card
 
     if isinstance(card, Jack):
         mine = None
@@ -42,6 +48,11 @@ def random_move(card, board, figures):
             if fig.get_player == 0:
                 if is_number_move_possible(fig, board, -4):
                     card.set_target_figure(fig)
+                    card.set_move_back(True)
+                    return card
+                if is_number_move_possible(fig, board, 4):
+                    card.set_target_figure(fig)
+                    card.set_move_back(False)
                     return card
 
     if isinstance(card, Ass):

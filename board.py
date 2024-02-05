@@ -120,6 +120,7 @@ class FigureButton(QPushButton):
                     self.ins_ziel_setzen(im_ziel)
                     return
             self.ins_feld_setzen(neues_feld)
+            self.blockt = False
 
         if(self.mein_feld[0] == ziele[self.spieler]):
             neues_feld = self.mein_feld[1]+wie_viel

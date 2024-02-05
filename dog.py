@@ -63,10 +63,14 @@ class GameRunner():
                 if figs.get_spielernummer() == playerNumber:
                     if figs.get_aktuelles_feld()[0] in zuhause:
                         figs.rauskommen()
-                        return
+                        return          
         if isinstance(card, EasyCard) and card.get_target_figure() != None:
             figure = self.boardGraphic.getFigure(card.get_target_figure(),playerNumber)
             figure.ziehen(card.get_value(), card.get_enter_if_possible() )
+            for figs in self.boardGraphic.getFigures():
+                if figs != figure and figs.get_aktuelles_feld()[0] == 'Spielfeld' and figs.get_aktuelles_feld()[1] == figure.get_aktuelles_feld()[1]:
+                    figs.nach_hause()
+                     
 
     def swap_command_for_player(self, i:int):
             cards = self.players[i].getHand()
