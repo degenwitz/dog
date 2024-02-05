@@ -26,3 +26,6 @@ class Board:
 
   def get_field_in_board(self, i):
     return self.board[i%64]
+
+  def get_goal_fiel_player(self, playernumber:int, fieldnumber:int):
+    return  self.goals[fieldnumber][playernumber]

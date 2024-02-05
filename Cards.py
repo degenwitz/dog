@@ -61,6 +61,7 @@ class EasyCard(Card):
   def key(self):
     return unicodeCards[(self.get_color(), self.get_value())]
 
+
 class Four(EasyCard):
     def __init__(self, color):
         super().__init__(color, 4)
@@ -74,6 +75,7 @@ class Four(EasyCard):
     
     def key(self):
        return unicodeCards[(self.get_color(), 4)]
+
 
 class King(EasyCard):
   def __init__(self, color):
@@ -89,6 +91,7 @@ class King(EasyCard):
   def key(self):
     return unicodeCards[(self.get_color(), 13)]
 
+
 class Ass(King):
   def __init__(self, color):
     super().__init__(color)
@@ -103,6 +106,7 @@ class Ass(King):
   def set_as_one(self):
       self.value = 1
 
+
 class Seven(Card):
   def __init__(self, color):
     super().__init__(color)
@@ -111,8 +115,11 @@ class Seven(Card):
   def key(self):
     return unicodeCards[(self.get_color(), 7)]
 
-  def set_target_figures(figures:list):
-    self.figures = []
+  def set_target_figures(self, figures:list):
+    self.figures = figures
+
+  def get_target_figures(self):
+    return self.figures
 
 
 
@@ -120,14 +127,18 @@ class Jack(Card):
   def __init__(self, color):
     super().__init__(color)
 
-  def set_my_figure(figure:Figur):
+  def set_my_figure(self, figure:Figur):
       self.my_fig = figure
 
-  def set_other_figure(figure:Figur):
+  def set_other_figure(self, figure:Figur):
       self.op_fig = figure
+
+  def get_swap_figures(self):
+      return (self.my_fig, self.op_fig)
 
   def key(self):
     return unicodeCards[(self.get_color(), 11)]
+
 
 class Joker(Card):
   def __init__(self, color):

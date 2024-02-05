@@ -272,7 +272,6 @@ class Pile_Graphic():
             self.__reorg()
 
     def remove_card(self, card:Card):
-        print("removing card from dicard", card)
         for card_w in self.__pile:
             if card_w.is_card(card):
                 self.__pile.remove(card_w)
@@ -407,7 +406,7 @@ class BoardGraphic(QWidget):
         figur_playernumber = (figure.get_player()+playernumber)%4
         for fig in self.list:
             if fig.get_spielernummer() == figur_playernumber:
-                if fig.get_figurenrnummer() == fig.get_figurenrnummer():
+                if fig.get_figurenrnummer() == figure.number:
                     return fig
 
     def addCard(self, card:Card, ort):

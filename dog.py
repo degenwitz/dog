@@ -3,7 +3,7 @@ from boardDTO import Board
 from PyQt5.QtWidgets import QApplication
 from playerClass import PlayerClass
 from randomPlayer import RandomPlayerBot, get_playable_cards
-from Cards import Card, EasyCard, Four, Seven, King, Ass, Joker
+from Cards import Card, EasyCard, Four, Seven, King, Ass, Joker, Jack
 import random
 from global_vals import spielfeld, zuhause, ziele
 from Figure import Figur
@@ -32,6 +32,7 @@ class GameRunner():
                 deck.append(Seven(color))
                 deck.append(King(color))
                 deck.append(Ass(color))
+                deck.append(Jack(color))
             for i in range(3):
                 deck.append(Joker())
         random.shuffle(deck)
@@ -57,22 +58,69 @@ class GameRunner():
         if self.currentHandSize < 2:
             self.currentHandSize = 5
 
+    def figur_bewegen(self, playerNumber, card):
+        figure = self.boardGraphic.getFigure(card.get_target_figure(),playerNumber)
+        figure.ziehen(card.get_value(), card.get_enter_if_possible() )
+        for figs in self.boardGraphic.getFigures():
+            if figs != figure and figs.get_aktuelles_feld()[0] == 'Spielfeld' and figure.get_aktuelles_feld()[0] == 'Spielfeld' and figs.get_aktuelles_feld()[1] == figure.get_aktuelles_feld()[1]:
+                figs.nach_hause()
+
+
     def executeCard(self, playerNumber, card):
-        if isinstance(card, King) and card.get_exit() == True:
-            for figs in self.boardGraphic.getFigures():
-                if figs.get_spielernummer() == playerNumber:
-                    if figs.get_aktuelles_feld()[0] in zuhause:
-                        figs.rauskommen()
-                        return
+
+        #handles ass and king
+        if isinstance(card, King) == True:
+            if card.get_exit():
+                for figs in self.boardGraphic.getFigures():
+                    if figs.get_spielernummer() == playerNumber:
+                        if figs.get_aktuelles_feld()[0] in zuhause:
+                            figs.rauskommen()
+                            return
+            else:
+                self.figur_bewegen(playerNumber, card)
+                return
+
+        if isinstance(card, Four):
+            if card.get_move_back():
+                figure = self.boardGraphic.getFigure(card.get_target_figure(),playerNumber)
+                feld_zahl = (figure.get_aktuelles_feld()[1] - 4)%64
+                figure.ins_feld_setzen(feld_zahl)
+                for figs in self.boardGraphic.getFigures():
+                    if figs != figure and figs.get_aktuelles_feld()[0] == 'Spielfeld' and figs.get_aktuelles_feld()[1] == figure.get_aktuelles_feld()[1]:
+                        figs.nach_hause()
+                return 
+            else:
+                self.figur_bewegen(playerNumber, card)
+                return
+
+        if isinstance(card, Seven):
+            for figs in card.get_target_figures():
+                eins = EasyCard(colors[0], 1)
+                eins.set_enter_if_possible( card.get_enter_if_possible() )
+                eins.set_target_figure(figs)
+                self.figur_bewegen(playerNumber, eins)
+            return
 
         if isinstance(card, EasyCard) and card.get_target_figure() != None:
-            figure = self.boardGraphic.getFigure(card.get_target_figure(),playerNumber)
-            figure.ziehen(card.get_value(), card.get_enter_if_possible() )
-            for figs in self.boardGraphic.getFigures():
-                if figs != figure and figs.get_aktuelles_feld()[0] == 'Spielfeld' and figure.get_aktuelles_feld()[0] == 'Spielfeld' and figs.get_aktuelles_feld()[1] == figure.get_aktuelles_feld()[1]:
-                    figs.nach_hause()
-                    return
-                     
+            self.figur_bewegen(playerNumber, card)
+            return
+
+
+        if isinstance(card, Jack):
+            my_fig, other_fig = card.get_swap_figures()
+            pos1 = (my_fig.get_position()[1]+16*playerNumber)%64
+            pos2 = (other_fig.get_position()[1]+16*playerNumber)%64
+            figure1 = self.boardGraphic.getFigure(my_fig,playerNumber)
+            figure2 = self.boardGraphic.getFigure(other_fig,playerNumber)
+            figure1.ins_feld_setzen(pos2)
+            figure2.ins_feld_setzen(pos1)
+            return
+
+        if isinstance(card, Joker):
+            self.executeCard(playerNumber, card.get_card() )
+            return
+
+        raise Exception('No way to play card found for card ' + str(card) )
 
     def swap_command_for_player(self, i:int):
             cards = self.players[i].getHand()
