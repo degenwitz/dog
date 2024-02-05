@@ -22,7 +22,7 @@ def is_number_move_possible(figure: Figur, board, number:int, entergGaol=True):
         r = range(-1, number-1, -1)
     for i in r:
         step_field = startField + i
-        if step_field >= 65 and entergGaol:
+        if step_field >= 65 and (entergGaol or figure.is_in_goal() ):
             if step_field > 68:
                 return False
             else:
@@ -34,7 +34,7 @@ def is_number_move_possible(figure: Figur, board, number:int, entergGaol=True):
 
     position_in_field = startField + number
 
-    if entergGaol and position_in_field >= 65:
+    if (entergGaol or figure.is_in_goal()) and position_in_field >= 65:
         if position_in_field >= 68:
             return False
         else:
@@ -43,7 +43,6 @@ def is_number_move_possible(figure: Figur, board, number:int, entergGaol=True):
                 return True
             else:
                 return False
-
     else:
         position_in_field = position_in_field%64
         if board.get_board()[position_in_field] == None or not board.get_board()[position_in_field].is_blocking():
@@ -53,23 +52,6 @@ def is_number_move_possible(figure: Figur, board, number:int, entergGaol=True):
 
 
 def random_move(card, board, figures):
-
-    if isinstance(card, King):
-        for fig in figures:
-            if fig.get_player() == 0:
-                if fig.is_home() and (board.get_board()[0] == None or not board.get_board()[0].is_blocking()):
-                    card.set_exit(True)
-                    return card
-                if is_number_move_possible(fig, board, 13):
-                    card.set_exit(False)
-                    card.set_enter_if_possible(True)
-                    card.set_target_figure(fig)
-                    return card
-                if is_number_move_possible(fig, board, 13, False):
-                    card.set_exit(False)
-                    card.set_enter_if_possible(False)
-                    card.set_target_figure(fig)
-                    return card
 
     if isinstance(card, Jack):
         mine = None
@@ -88,7 +70,7 @@ def random_move(card, board, figures):
     if isinstance(card, Four):
         for fig in figures:
             if fig.get_player() == 0:
-                if is_number_move_possible(fig, board, -4):
+                if not fig.is_in_goal() and is_number_move_possible(fig, board, -4):
                     card.set_target_figure(fig)
                     card.set_move_back(True)
                     return card
@@ -105,7 +87,7 @@ def random_move(card, board, figures):
 
     if isinstance(card, Ass):
         for fig in figures:
-            if fig.get_player == 0:
+            if fig.get_player() == 0:
                 if is_number_move_possible(fig, board, 11):
                     card.set_as_eleven()
                     card.set_target_figure(fig)
@@ -125,6 +107,23 @@ def random_move(card, board, figures):
                     card.set_as_one()
                     card.set_target_figure(fig)
                     card.set_enter_if_possible(False)
+                    return card
+
+    if isinstance(card, King):
+        for fig in figures:
+            if fig.get_player() == 0:
+                if fig.is_home() and (board.get_board()[0] == None or not board.get_board()[0].is_blocking()):
+                    card.set_exit(True)
+                    return card
+                if is_number_move_possible(fig, board, 13):
+                    card.set_exit(False)
+                    card.set_enter_if_possible(True)
+                    card.set_target_figure(fig)
+                    return card
+                if is_number_move_possible(fig, board, 13, False):
+                    card.set_exit(False)
+                    card.set_enter_if_possible(False)
+                    card.set_target_figure(fig)
                     return card
 
     if isinstance(card, Seven): #TODO: mit goal machen!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
