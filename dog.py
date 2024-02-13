@@ -94,9 +94,9 @@ class GameRunner():
                 return
 
         if isinstance(card, Seven):
-            for figs in card.get_target_figures():
-                eins = EasyCard(colors[0], 1)
-                eins.set_enter_if_possible( card.get_enter_if_possible() )
+            for (figs, enter_goal) in card.get_target_figures():
+                eins = EasyCard(card.get_color(), 1)
+                eins.set_enter_if_possible( enter_goal )
                 eins.set_target_figure(figs)
                 self.figur_bewegen(playerNumber, eins)
             return

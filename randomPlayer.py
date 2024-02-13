@@ -1,6 +1,9 @@
 import random
 from Cards import Card, EasyCard, Four, Seven, King, Ass, Joker, Jack
+from global_vals import spielfeld, zuhause, ziele
 from Figure import Figur
+from random_player_exception import Card_not_playble
+import copy
 
 def print_figures(figures):
     for f in figures:
@@ -49,6 +52,149 @@ def is_number_move_possible(figure: Figur, board, number:int, entergGaol=True):
             return True
         else:
             return False
+
+
+def copy_board(board, figure):
+    board = copy.deepcopy(board)
+    for field in board.get_board():
+        if field != None and field.get_player() == figure.get_player() and field.get_number() == figure.get_number():
+            figure = field
+            break
+    for i in range(0,4):
+        field = board.get_goal_fiel_player(0,i)
+        if field != None and field.get_player() == figure.get_player() and field.get_number() == figure.get_number():
+            figure = field
+            break
+    return (board, figure)
+
+
+#returns list: [ (how_much_can_walk, ((figur, go_in), (figut_go_in), ...), changedBoad),  ]
+def handle_seven(board_org, figure_org, whats_left:int, eatown = False):
+
+    if figure_org.is_in_goal():
+        (board, figure) = copy_board(board_org, figure_org)
+        could_walk = 0
+        walked_figures = []
+        for goalfield in range(figure.get_position()[1]+1, figure.get_position()[1]+whats_left+1):
+            if goalfield < 4 and board.get_goal_fiel_player(0, goalfield) == None:
+                could_walk += 1
+                walked_figures.append( (figure, True) )
+            else:
+                break
+        if could_walk == 0:
+            return []
+        else:
+            figure.set_position((ziele[0], figure.get_position()[1]+could_walk))
+            board.place_figure(figure)
+            return [ (could_walk ,walked_figures, board), ]
+    elif figure_org.is_in_field():
+        returner = []
+        pos = figure_org.get_position()[1]
+        if  (pos + whats_left > 64 or (pos == 0 and not figure_org.is_blocking())) and board_org.get_goal_fiel_player(0,0) == None:
+            (board, figure) = copy_board(board_org, figure_org)
+            if figure.get_position()[1] == 0:
+                pos = 65
+            could_walk = 0
+            walked_figures = []
+            for i in range(pos+1, pos+whats_left+1):
+                if i > 68:
+                    break
+                if i > 64:
+                    can_walk = board.get_goal_fiel_player(0, i-65) == None
+                else:
+                    can_walk = board.get_board()[i%64] == None or board.get_board()[i%64].get_player() != 0 or (eatown and not board.get_board()[i%64].is_blocking() )
+                if can_walk:
+                    could_walk += 1
+                    walked_figures.append( (figure, True) )
+                else:
+                    break
+            if pos + could_walk > 64:
+                figure.set_position((ziele[0], (pos+could_walk-65) ))
+                board.place_figure(figure)
+                returner.append( (could_walk ,walked_figures, board) )
+
+        (board, figure) = copy_board(board_org, figure_org)
+        pos = figure.get_position()[1]
+        could_walk = 0
+        walked_figures = []
+        for i in range(pos+1, pos+whats_left+1):
+            can_walk = (board.get_board()[i%64] == None or
+                        (not board.get_board()[i%64].is_blocking() and
+                         (board.get_board()[i%64].get_player() != 0 or eatown  )
+                         ))
+            if can_walk:
+                could_walk += 1
+                walked_figures.append( (figure, False) )
+            else:
+                break
+        if could_walk > 0:
+            figure.set_position( (spielfeld, (figure.get_position()[1]+could_walk)%64 ) )
+            board.place_figure(figure)
+            returner.append( (could_walk ,walked_figures, board) )
+        return returner
+    else:
+        return []
+
+
+def get_random_seven_move(card, board, move=7):
+    my_figs = []
+    for i in range(0,4):
+        field = board.get_goal_fiel_player(0,i)
+        if field != None and field.get_player() == 0:
+            my_figs.append(field)
+    for player in board.get_board():
+        if player != None and player.get_player() == 0:
+            my_figs.append(player)
+
+    #try without eating own:
+    for fig in my_figs:
+        v = handle_seven(board, fig, move, False)
+        for i in range(len(v)):
+            plan = v[i]
+            if(move-plan[0] == 0):
+                if move==7:
+                    card.set_target_figures(plan[1])
+                    return card
+                else:
+                    return plan[1]
+            else:
+                l = plan[1]
+                next_steps = get_random_seven_move(card, plan[2], move-plan[0])
+                if len(next_steps) > 0:
+                    l += next_steps
+                    if move==7:
+                        card.set_target_figures(l)
+                        return card
+                    else:
+                        return l
+
+    #try eating own:
+    for fig in my_figs:
+        v = handle_seven(board, fig, move, True)
+        for i in range(len(v)):
+            plan = v[i]
+            if(move-plan[0] == 0):
+                if move==7:
+                    card.set_target_figures(plan[1])
+                    return card
+                else:
+                    return plan[1]
+            else:
+                l = plan[1]
+                next_steps = get_random_seven_move(card, plan[2], move-plan[0])
+                if len(next_steps) > 0:
+                    l += next_steps
+                    if move==7:
+                        card.set_target_figures(l)
+                        return card
+                    else:
+                        return l
+                    
+    if move == 7:
+        raise Card_not_playble
+    else:
+        return []
+
 
 
 def random_move(card, board, figures):
@@ -127,6 +273,7 @@ def random_move(card, board, figures):
                     return card
 
     if isinstance(card, Seven): #TODO: mit goal machen!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        return get_random_seven_move(card, board)
         l = []
         my_figs = []
         for fig in figures:
@@ -169,11 +316,12 @@ def random_move(card, board, figures):
                 new_card = random_move(pos_card, board, figures)
                 card.set_card(new_card)
                 return card
-            except Exception as error:
+            except Card_not_playble as error:
                 pass
 
 
-    raise Exception('No legal move found')
+
+    raise Card_not_playble
 
 def get_playable_cards(hand, board, figures):
     possible_cards = []
@@ -181,7 +329,7 @@ def get_playable_cards(hand, board, figures):
         try:
             random_move(card, board, figures)
             possible_cards.append(card)
-        except Exception as error:
+        except Card_not_playble as error:
             pass
     return possible_cards
 

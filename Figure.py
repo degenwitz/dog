@@ -11,11 +11,17 @@ class Figur:
   def get_position(self):
     return self.field
 
+  def set_position(self, field: tuple):
+    self.field = field
+
   def __str__(self):
     return "player: " + str(self.player) + " num: " + str(self.number) + " feld: " + str(self.field)
 
   def get_player(self):
     return self.player
+
+  def get_number(self):
+    return self.number
 
   def is_in_field(self):
     return self.field[0] == spielfeld
