@@ -18,6 +18,7 @@ class GameRunner():
         self.playersBots = [playerBot1, playerBot2, playerBot3, playerBot4]
         self.players = (PlayerClass(), PlayerClass(), PlayerClass(), PlayerClass())
         self.currentPlayer = 0
+        self.__cureent_starting_player = 0
         self.currentHandSize = 6
         self.deck = GameRunner.deckBauen()
         self.discard = ()
@@ -48,9 +49,10 @@ class GameRunner():
     def distributeCards(self):
         for i in range(self.currentHandSize):
             for j in range(4):
+                plyer = (self.currentPlayer+j)%4
                 self.deckReshuffle()
-                self.players[(self.currentPlayer+j)%4].addCard(self.deck[0])
-                self.boardGraphic.addCard(self.deck[0],("player", j))
+                self.players[plyer].addCard(self.deck[0])
+                self.boardGraphic.addCard(self.deck[0],("player", plyer))
                 self.deck = self.deck[1:]
         self.__still_need_to_swap_cards = True
 
@@ -61,10 +63,12 @@ class GameRunner():
     def figur_bewegen(self, playerNumber, card):
         figure = self.boardGraphic.getFigure(card.get_target_figure(),playerNumber)
         figure.ziehen(card.get_value(), card.get_enter_if_possible() )
-        for figs in self.boardGraphic.getFigures():
-            if figs != figure and figs.get_aktuelles_feld()[0] == 'Spielfeld' and figure.get_aktuelles_feld()[0] == 'Spielfeld' and figs.get_aktuelles_feld()[1] == figure.get_aktuelles_feld()[1]:
-                figs.nach_hause()
+        self.fressen(figure)
 
+    def fressen(self, figure):
+                for figs in self.boardGraphic.getFigures():
+                    if figs != figure and figs.get_aktuelles_feld()[0] == 'Spielfeld' and figure.get_aktuelles_feld()[0] == 'Spielfeld' and figs.get_aktuelles_feld()[1] == figure.get_aktuelles_feld()[1]:
+                        figs.nach_hause()
 
     def executeCard(self, playerNumber, card):
 
@@ -75,6 +79,7 @@ class GameRunner():
                     if figs.get_spielernummer() == playerNumber:
                         if figs.get_aktuelles_feld()[0] in zuhause:
                             figs.rauskommen()
+                            self.fressen(figs)
                             return
             else:
                 self.figur_bewegen(playerNumber, card)
@@ -85,9 +90,7 @@ class GameRunner():
                 figure = self.boardGraphic.getFigure(card.get_target_figure(),playerNumber)
                 feld_zahl = (figure.get_aktuelles_feld()[1] - 4)%64
                 figure.ins_feld_setzen(feld_zahl)
-                for figs in self.boardGraphic.getFigures():
-                    if figs != figure and figs.get_aktuelles_feld()[0] == 'Spielfeld' and figs.get_aktuelles_feld()[1] == figure.get_aktuelles_feld()[1]:
-                        figs.nach_hause()
+                self.fressen(figure)
                 return 
             else:
                 self.figur_bewegen(playerNumber, card)
@@ -154,6 +157,14 @@ class GameRunner():
                     self.discard += (playedCard,)
                     self.boardGraphic.addCard(playedCard, ("discard",) )
             self.__increase_turn()
+
+        if all(len(player.getHand()) == 0 for player in self.players):
+            self.__still_need_to_swap_cards = True
+            self.__cureent_starting_player = (self.__cureent_starting_player+1)%4
+            self.distributeCards()
+            self.boardGraphic.set_pile(self.deck, ("deck",) )
+            self.boardGraphic.set_pile(self.discard, ("discard",) )
+            self.set_turn(self.__cureent_starting_player)
 
 
     def __increase_turn(self):

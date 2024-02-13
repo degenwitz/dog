@@ -223,7 +223,11 @@ class PlayerGraphic():
                 self.__hand.remove(card_w)
                 self.__reorg()
                 return card_w
-        print("ment to remove card", str(card), "but card not found")
+        s = "removing card "+ str(card.comparer()) +" cards I have: "
+        for card_w in self.__hand:
+            s += str(card_w.card.comparer()) + ", "
+        print(s)
+        print("ment to remove card", str(card.comparer()), "but card not found")
 
 
 class Pile_Graphic():
@@ -258,6 +262,9 @@ class Pile_Graphic():
     def add_graphic_card(self, card: CardGraphic, window):
         self.__pile.insert(0, card)
         self.__reorg()
+
+    def clean_pile(self):
+        self.__pile = []
 
     def __reorg(self):
         i = 0
@@ -423,10 +430,12 @@ class BoardGraphic(QWidget):
 
     def set_pile(self, cards, ort):
         if(ort[0] == "discard"):
+            self.discard.clean_pile()
             for card in cards:
                 card_w = self.find_card(card)
                 self.discard.add_graphic_card(card_w, self)
         if(ort[0] == "deck"):
+            self.deck.clean_pile()
             for card in cards:
                 card_w = self.find_card(card)
                 self.deck.add_graphic_card(card_w, self)
