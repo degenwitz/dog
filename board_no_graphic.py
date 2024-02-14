@@ -1,8 +1,3 @@
-from PyQt5.QtWidgets import QApplication, QHBoxLayout, QWidget, QPushButton
-from PyQt5.QtCore import Qt, QMimeData, QSize, QPoint, QObject, QThread, pyqtSignal
-from PyQt5.QtGui import QDrag, QPixmap, QIcon, QFont
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPixmap
 from Cards import Card
 import csv
 import random
@@ -32,98 +27,18 @@ with open('board.csv', newline='') as csvfile:
             continue
         felder[row[0]][int(row[1])] = (int(row[2])-11,int(row[3])-11)
 
-
-
-class NextPlayerButton(QPushButton):
-
-    def __init__(self, game, window):
-        super().__init__("next move", window)
-        self.game = game
-        self.move(525,487)
-
-    def onClick(self):
-        self.game.nextMove()
-
-
-class SkipTurnButton(QPushButton):
-
-    def __init__(self, game, window):
-        super().__init__("skip turn", window)
-        self.game = game
-        self.move(525,437)
-
-    def onClick(self):
-        self.game.skipTurn()
-
-class SimulateWorker(QObject):
-    finished = pyqtSignal()
-    progress = pyqtSignal(int)
-
-    def __init__(self, game):
-        super().__init__()
-        self.game = game
-
-    def run(self):
-        """Long-running task."""
-        while not self.game.has_some_one_won():
-            sleep(0.1)
-            #self.progress.emit(i + 1)
-            self.game.nextMove()
-        print("its over ... its finally over")
-        self.finished.emit()
-
-
-class SimulateButton(QPushButton):
-
-    def __init__(self, game, window):
-        super().__init__("simulate", window)
-        self.game = game
-        self.move(525,407)
-        self.thread = QThread()
-        self.worker = SimulateWorker(game)
-        self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        #self.worker.progress.connect(window.reportProgress)
-        self.is_running = None
-
-    def onClick(self):
-        self.thread.start()
-
-class FigureButton(QPushButton):
+class FigureButton:
 
     def __init__(self, spieler, nummer, window):
-        super().__init__("", window)
-        self.setIcon(QIcon(tokens[spieler]))
-        self.setIconSize(QSize(22,22))
-        self.setStyleSheet("background: transparent; border : 0")
         self.spieler = spieler
         self.nummer = nummer
         self.mein_feld = (zuhause[spieler], nummer)
         self.blockt = True
         pos = felder[zuhause[spieler]][nummer]
-        self.move(pos[0],pos[1])
-
-
-    def mouseMoveEvent(self, e):
-        if e.buttons() == Qt.LeftButton:
-            drag = QDrag(self)
-            mime = QMimeData()
-            drag.setMimeData(mime)
-
-            pixmap = QPixmap(self.size())
-            self.render(pixmap)
-            drag.setPixmap(pixmap)
-            
-            drag.setHotSpot(QPoint( self.width() // 2, self.height() // 2 ) )
-            drag.exec_(Qt.MoveAction)
 
     def setzen(self, art, feld_nummer):
         self.mein_feld = (art, feld_nummer)
         pos = felder[art][feld_nummer]
-        self.move(pos[0],pos[1])
         if(art != spielfeld):
             self.blockt = True
         else:
@@ -177,34 +92,17 @@ class FigureButton(QPushButton):
         return self.nummer
 
 
-class CardGraphic(QPushButton):
+class CardGraphic:
 
     def __init__(self, card: Card, poition, window):
-        super().__init__(str(card), window)
         self.__position = poition
-        self.move(poition[0],poition[1])
-        self.setFont(QFont('Times', 30))
         self.card = card
-        self.setMaximumSize(QSize(40,55))
 
     def is_card(self, card:Card):
         return card == self.card
 
-
-    def mouseMoveEvent(self, e):
-        if e.buttons() == Qt.LeftButton:
-            drag = QDrag(self)
-            mime = QMimeData()
-            drag.setMimeData(mime)
-
-            pixmap = QPixmap(self.size())
-            self.render(pixmap)
-            drag.setPixmap(pixmap)
-            drag.setHotSpot(QPoint( self.width() //2, self.height() // 2 ) )
-            drag.exec_(Qt.MoveAction)
-
     def my_move(self, position):
-        self.move(position[0], position[1])
+        pass
 
 
 class PlayerGraphic():
@@ -220,23 +118,11 @@ class PlayerGraphic():
         self.__playernumber = playernumer
         self.__hand = []
 
-        self.__player_indicator = QPushButton("", window)
-        self.__player_indicator.setIcon(QIcon(tokens[playernumer]))
-        self.__player_indicator.setIconSize(QSize(24,24))
-        self.__player_indicator.move(550,10 + self.__playernumber*80)
-        self.__player_indicator.clicked.connect(set_player)
-
-        self.__current_player = QPushButton("", window)
-        self.__current_player.setIcon(QIcon("startspieler_icon.jpg"))
-        self.__current_player.setIconSize(QSize(24,24))
-        self.__current_player.move(520,10 + self.__playernumber*80)
-        self.__current_player.setVisible(False)
-
     def get_number():
         return self.__playernumber
 
     def set_as_current_player(self, isCurrentPlayer:bool):
-        self.__current_player.setVisible(isCurrentPlayer)
+        pass
 
     def add_graphic_card(self, card: CardGraphic, window):
         position = (600+len(self.__hand)*45, 10 + self.__playernumber*80)
@@ -273,29 +159,10 @@ class Pile_Graphic():
         self.start_ort = pos_down
         self.__pile = []
 
-        btn = QPushButton(name, window)
-        btn.move(10, pos_down - 30)
-
     def calc_pos(self, i):
         x_i = i % 31
         y_i = i // 31
         return (10+x_i*40, self.start_ort+55*y_i)
-
-    def play_into_pile(self, window, widget, position):
-        height = position.x()
-        width = position.y()
-        i = 0
-        while i < len(self.__pile):
-            card = self.__pile[i]
-            if card.x() < position.x() and card.x()+40 > position.x() and card.y() < position.y() and card.y() + 55 > position.y():
-                break
-            i += 1
-        if i < len(self.__pile):
-            self.__pile.insert(i, widget)
-        else:
-            self.__pile.append(widget)
-        self.__reorg()
-        return i
 
     def add_graphic_card(self, card: CardGraphic, window):
         self.__pile.insert(0, card)
@@ -305,16 +172,10 @@ class Pile_Graphic():
         self.__pile = []
 
     def __reorg(self):
-        i = 0
-        for card in self.__pile:
-            position = self.calc_pos(i)
-            card.my_move(position)
-            i += 1
+        pass
 
     def remove_card_widget(self, card: CardGraphic, window):
-        if card in self.__pile:
-            self.__pile.remove(card)
-            self.__reorg()
+        pass
 
     def remove_card(self, card:Card):
         for card_w in self.__pile:
@@ -325,43 +186,16 @@ class Pile_Graphic():
         print("ment to remove card", str(card), "but card not found")
 
 
-class BoardGraphic(QWidget): #QMainWindow): #
+class BoardGraphic: #QMainWindow): #
 
     def __init__(self, game):
-        super().__init__()
-        self.setAcceptDrops(True)
-        self.setGeometry(0, 0, 1260, 1000)
 
-        #Backgroud image
-        # creating label
-        self.label = QLabel(self)
-        # loading image
-        self.pixmap = QPixmap('board.png')
-        # adding image to label
-        self.label.setPixmap(self.pixmap)
-        # Optional, resize label to image size
-        self.label.resize(self.pixmap.width(),
-                          self.pixmap.height())
-
-        #self.blayout = QHBoxLayout()
         self.list = []
         j = 0
         for spieler in range(4):
             for nummer in range(4):
                 btn = FigureButton(spieler, nummer,self)
                 self.list.append(btn)
-
-        #nextMoveButton
-        btnMove = NextPlayerButton(game, self)
-        btnMove.clicked.connect(btnMove.onClick)
-
-        #skipTurnButton
-        btnClick = SkipTurnButton(game, self)
-        btnClick.clicked.connect(btnClick.onClick)
-
-        #simulate
-        btnSim = SimulateButton(game, self)
-        btnSim.clicked.connect(btnSim.onClick)
 
         #players
         self.__players = (PlayerGraphic(0, self, lambda: game.set_turn(0)),
@@ -387,7 +221,6 @@ class BoardGraphic(QWidget): #QMainWindow): #
         all_cards = []
         for card in l:
             card_gr = CardGraphic(card, (0,0), self)
-            card_gr.adjustSize()
             all_cards.append(card_gr)
         self.all_cards = tuple(all_cards)
 
@@ -396,57 +229,6 @@ class BoardGraphic(QWidget): #QMainWindow): #
             if card_w.is_card(card):
                 return card_w
         print("searched for card that does not exist!!!!")
-
-    def dragEnterEvent(self, e):
-        e.accept()
-
-
-    def distance(x1,y1,x2,y2):
-        return (x1-x2+11)**2+(y1-y2+11)**2
-
-    def calculate_closes_ball(pos, art, dist=1000000000, cur = None, art_alt = None):
-        for i, feld in felder[art].items():
-            dis_here = BoardGraphic.distance(pos.x()-22,pos.y()-22, feld[0], feld[1])
-            if dis_here < dist:
-                dist = dis_here
-                cur = i
-                art_alt = art
-        return cur, dist, art_alt
-
-    def dropEvent(self, e):
-        pos = e.pos()
-        widget = e.source()
-        if isinstance(widget, FigureButton):
-            cur, dist, art = BoardGraphic.calculate_closes_ball(pos, spielfeld)
-            for haus in zuhause:
-                cur, dist, art = BoardGraphic.calculate_closes_ball(pos, haus, dist=dist, cur=cur, art_alt=art)
-            for ziel in ziele:
-                cur, dist, art = BoardGraphic.calculate_closes_ball(pos, ziel,dist=dist, cur=cur, art_alt=art)
-            widget.setzen(art, cur)
-            e.accept()
-        elif isinstance(widget, CardGraphic):
-            for player in self.__players:
-                player.remove_card_widget(widget, self)
-            self.deck.remove_card_widget(widget, self)
-            self.discard.remove_card_widget(widget, self)
-            if pos.x() > 500 and pos.y() < 500 :
-                #spielerkarten
-                newPlayer = PlayerGraphic.best_dinstance(pos.y())
-                self.store_game.set_player_card(newPlayer, widget.card)
-                if newPlayer >= 0:
-                    self.__players[newPlayer].add_graphic_card(widget, self)
-            elif pos.y() > 500 and pos.y() < 760:
-                #deck
-                i = self.deck.play_into_pile(self, widget, pos)
-                self.store_game.set_deck_card(widget.card, i)
-            elif pos.y() > 760:
-                i = self.discard.play_into_pile(self, widget, pos)
-                self.store_game.set_discard_card(widget.card, i)
-            else:
-                self.discard.add_graphic_card(widget, self)
-                self.store_game.set_discard_card(widget.card, 0)
-            e.accept()
-
 
     def getFigures(self):
         return self.list

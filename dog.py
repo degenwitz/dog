@@ -1,4 +1,10 @@
-from board import (FigureButton, BoardGraphic)
+import sys
+
+if sys.argv[1] == "NOGRAPH":
+    from board_no_graphic import (FigureButton, BoardGraphic)
+else:
+    from board import (FigureButton, BoardGraphic)
+
 from boardDTO import Board
 from PyQt5.QtWidgets import QApplication
 from playerClass import PlayerClass
@@ -144,15 +150,21 @@ class GameRunner():
         else:
             cards = self.players[self.currentPlayer].getHand()
             if len(cards) != 0:
-                board, figuren, game = self.generatePlayerObjects(self.currentPlayer)
+                aus_der_sicht_von = self.currentPlayer
+                if self.check_if_player_done(self.currentPlayer):
+                    aus_der_sicht_von = (self.currentPlayer+2)%4
+                board, figuren, game = self.generatePlayerObjects(aus_der_sicht_von)
                 if len(get_playable_cards(cards, board, figuren)) == 0:
                     for card in cards:
                         self.players[self.currentPlayer].removeCard(card)
                         self.discard += (card,)
                         self.boardGraphic.addCard(card, ("discard",) )
                 else:
-                    playedCard = self.playersBots[self.currentPlayer].playCard(cards, board, figuren, game)
-                    self.executeCard(self.currentPlayer, playedCard)
+                    if aus_der_sicht_von == self.currentPlayer:
+                        playedCard = self.playersBots[self.currentPlayer].playCard(cards, board, figuren, game)
+                    else:
+                        playedCard = self.playersBots[self.currentPlayer].playCard(cards, board, figuren, game)
+                    self.executeCard(aus_der_sicht_von, playedCard)
                     self.players[self.currentPlayer].removeCard(playedCard)
                     self.discard += (playedCard,)
                     self.boardGraphic.addCard(playedCard, ("discard",) )
@@ -165,6 +177,14 @@ class GameRunner():
             self.boardGraphic.set_pile(self.deck, ("deck",) )
             self.boardGraphic.set_pile(self.discard, ("discard",) )
             self.set_turn(self.__cureent_starting_player)
+
+    def check_if_player_done(self, i:int):
+        figuresGr = self.boardGraphic.getFigures()
+        in_goal = 0
+        for fig in figuresGr:
+            if fig.get_aktuelles_feld()[0] == ziele[i]:
+                in_goal += 1
+        return in_goal == 4
 
 
     def __increase_turn(self):
@@ -252,12 +272,26 @@ class GameRunner():
             discard.append(card)
         self.discard = tuple(discard)
 
+    def has_some_one_won(self):
+        return (self.check_if_player_done(0) and self.check_if_player_done(2)) or (self.check_if_player_done(1) and self.check_if_player_done(3))
+
 
 game = GameRunner(RandomPlayerBot(),RandomPlayerBot(),RandomPlayerBot(),RandomPlayerBot())
 app = QApplication([])
 w = BoardGraphic(game)
 game.setGraphicBoard(w)
 game.init_game()
-w.show()
 
-app.exec_()
+if sys.argv[1] == "NOGRAPH":
+    i = 0
+    while not game.has_some_one_won():
+        i += 1
+        game.nextMove()
+        s = ""
+        for fig in game.generatePlayerObjects(0)[1]:
+            s += str(fig) + ", "
+        print(s)
+else:
+    print(sys.argv[0])
+    w.show()
+    app.exec_()

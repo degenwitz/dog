@@ -272,30 +272,8 @@ def random_move(card, board, figures):
                     card.set_target_figure(fig)
                     return card
 
-    if isinstance(card, Seven): #TODO: mit goal machen!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if isinstance(card, Seven):
         return get_random_seven_move(card, board)
-        l = []
-        my_figs = []
-        for fig in figures:
-            if fig.get_player() == 0 and fig.is_in_field():
-                my_figs.append(fig)
-        fields_moved = [0,] * len(my_figs)
-        for i in range(7):
-            candidate = None
-            for j in range(len(my_figs)):
-                field_in_board = board.get_field_in_board(my_figs[j].get_position()[1]+fields_moved[j]+1)
-                if field_in_board == None or (not field_in_board.is_blocking() and field_in_board.get_player() != 0):
-                    fields_moved[j] += 1
-                    candidate = my_figs[j]
-            if candidate == None:
-                for fig in my_figs:
-                    if board.get_field_in_board(fig.get_position()+1) == None or not board.get_field_in_board(fig.get_position()+1).is_blocking():
-                        candidate = fig
-                        break
-            l.append(candidate)
-        if not None in l:
-            card.set_target_figures(l)
-            return card
 
     if isinstance(card, EasyCard):
         for fig in figures:
@@ -342,6 +320,9 @@ class RandomPlayerBot():
         chosen_card = random.choice(playable_cards)
 
         return random_move(chosen_card, board, figures)
+
+    def playCardPartner(self, hand, board, figures, game):
+        return self.playCard(hand, board, figures, game)
 
     def swapCard(self, hand, board, figures, game):
         return random.choice(hand)
